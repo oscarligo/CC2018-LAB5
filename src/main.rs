@@ -1,13 +1,15 @@
 mod framebuffer;
-mod render;
-mod triangle;
 mod line;
 mod load_objects;
+mod render;
+mod shaders;
+mod triangle;
 mod uniforms;
+mod vertex;
 
 use framebuffer::Framebuffer;
-use render::render;
 use raylib::prelude::*;
+use render::render;
 use std::thread;
 use std::time::Duration;
 use uniforms::Uniforms;
@@ -22,12 +24,12 @@ fn main() {
         .build();
 
     // Load the 3D object from an .obj file
-    let obj = load_objects::load_obj("assets/object.obj").expect("Failed to load .obj file");
+    let vertex_array =
+        load_objects::load_obj("assets/object.obj").expect("Failed to load .obj file");
     let mut framebuffer = Framebuffer::new(WINDOW_WIDTH as u32, WINDOW_HEIGHT as u32, Color::BLACK);
 
     // moves the camera position to view the object from a different angle
-    let mut camera_pos = Vector3::new(10.0, 2.0, -2.0);
-    let objects = vec![obj];
+    let camera_pos = Vector3::new(10.0, 2.0, -2.0);
     let mut uniforms = Uniforms {
         model_matrix: Matrix::identity(),
         camera_pos,
@@ -54,7 +56,7 @@ fn main() {
             uniforms.camera_pos += Vector3::new(0.1, 0.0, 0.0);
         }
         // Render the 3D object to the framebuffer
-        render(&mut framebuffer, &objects, &uniforms, 90.0);
+        render(&mut framebuffer, &uniforms, &vertex_array);
 
         framebuffer.swap_buffers(&mut window, &thread);
         thread::sleep(Duration::from_millis(16));

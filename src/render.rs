@@ -1,45 +1,45 @@
 use crate::framebuffer::Framebuffer;
 use crate::line::line;
-use crate::load_objects::{Object, project_vertex};
+use crate::load_objects::project_vertex;
+use crate::shaders::vertex_shader;
 use crate::uniforms::Uniforms;
-use raylib::prelude::*;
+use crate::vertex::Vertex;
 
-pub fn render(
-    framebuffer: &mut Framebuffer,
-    objects: &[Object],
-    uniforms: &Uniforms,
-    fov: f32,
-) {
+pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Vertex]) {
     let width = framebuffer.width as f32;
     let height = framebuffer.height as f32;
 
-    for obj in objects {
-        for chunk in obj.indices.chunks_exact(3) {
-            // Local vertices of the triangle
-            let local_p0 = obj.vertices[chunk[0] as usize];
-            let local_p1 = obj.vertices[chunk[1] as usize];
-            let local_p2 = obj.vertices[chunk[2] as usize];
+    // 1. Vertex Processing
+    let transformed_vertices: Vec<Vertex> = vertex_array
+        .iter()
+        .map(|vertex| vertex_shader(vertex, uniforms))
+        .collect();
 
-            // Transform from local space to world space using the model matrix
-            let world_p0 = Vector3::transform(local_p0, uniforms.model_matrix);
-            let world_p1 = Vector3::transform(local_p1, uniforms.model_matrix);
-            let world_p2 = Vector3::transform(local_p2, uniforms.model_matrix);
+    // 2. Primitive Assembly
+    for triangle in transformed_vertices.chunks_exact(3) {
+        let (a, b, c) = (&triangle[0], &triangle[1], &triangle[2]);
+        let projected = [a, b, c].map(|vertex| {
+            project_vertex(
+                vertex.transformed_position,
+                uniforms.camera_pos,
+                90.0,
+                width,
+                height,
+            )
+        });
+        let [Some(a), Some(b), Some(c)] = projected else {
+            continue;
+        };
 
-            // Project the world space vertices to screen space
-            let proj0 = project_vertex(world_p0, uniforms.camera_pos, fov, width, height);
-            let proj1 = project_vertex(world_p1, uniforms.camera_pos, fov, width, height);
-            let proj2 = project_vertex(world_p2, uniforms.camera_pos, fov, width, height);
+        // 3. Rasterization
+        let fragments = line(a, b, framebuffer.width, framebuffer.height)
+            .into_iter()
+            .chain(line(b, c, framebuffer.width, framebuffer.height))
+            .chain(line(c, a, framebuffer.width, framebuffer.height));
 
-            // Draw the edges of the triangle if all vertices are successfully projected
-            if let (Some(a), Some(b)) = (proj0, proj1) {
-                line(framebuffer, a, b);
-            }
-            if let (Some(b), Some(c)) = (proj1, proj2) {
-                line(framebuffer, b, c);
-            }
-            if let (Some(c), Some(a)) = (proj2, proj0) {
-                line(framebuffer, c, a);
-            }
+        // 4. Fragment Processing
+        for (x, y) in fragments {
+            framebuffer.set_pixel(x, y);
         }
     }
 }

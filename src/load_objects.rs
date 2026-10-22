@@ -1,13 +1,9 @@
+use crate::vertex::Vertex;
 use raylib::prelude::{Vector2, Vector3};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-pub struct Object {
-    pub vertices: Vec<Vector3>,
-    pub indices: Vec<u32>,
-}
-
-pub fn load_obj(path: &str) -> Result<Object, Box<dyn std::error::Error>> {
+pub fn load_obj(path: &str) -> Result<Vec<Vertex>, Box<dyn std::error::Error>> {
     let file = File::open(path)?;
     let mut reader = BufReader::new(file);
 
@@ -17,7 +13,7 @@ pub fn load_obj(path: &str) -> Result<Object, Box<dyn std::error::Error>> {
 
     while reader.read_line(&mut line_buffer)? > 0 {
         let trimmed = line_buffer.trim();
-        
+
         if trimmed.is_empty() || trimmed.starts_with('#') {
             line_buffer.clear();
             continue;
@@ -37,7 +33,7 @@ pub fn load_obj(path: &str) -> Result<Object, Box<dyn std::error::Error>> {
                         let token = parts.next().ok_or("Expected 3 vertices per face")?;
                         let v_str = token.split('/').next().ok_or("Invalid face format")?;
                         let v_idx: usize = v_str.parse()?;
-                        
+
                         indices.push((v_idx - 1) as u32);
                     }
                 }
@@ -48,7 +44,16 @@ pub fn load_obj(path: &str) -> Result<Object, Box<dyn std::error::Error>> {
         line_buffer.clear();
     }
 
-    Ok(Object { vertices, indices })
+    indices
+        .into_iter()
+        .map(|index| {
+            vertices
+                .get(index as usize)
+                .copied()
+                .map(Vertex::new)
+                .ok_or_else(|| format!("Vertex index {} is out of bounds", index + 1).into())
+        })
+        .collect()
 }
 
 pub fn project_vertex(
