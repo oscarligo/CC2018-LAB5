@@ -1,9 +1,11 @@
-use raylib::prelude::Vector3;
+use raylib::prelude::{Color, Vector2, Vector3};
 
 #[derive(Clone, Debug)]
 pub struct Vertex {
     pub position: Vector3,
     pub transformed_position: Vector3,
+    pub screen_position: Option<Vector2>,
+    pub color: Color,
 }
 
 impl Vertex {
@@ -11,6 +13,8 @@ impl Vertex {
         Self {
             position,
             transformed_position: position,
+            screen_position: None,
+            color: Color::WHITE,
         }
     }
 }

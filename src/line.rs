@@ -1,11 +1,19 @@
-use raylib::prelude::*;
+use crate::fragment::Fragment;
+use crate::vertex::Vertex;
+use raylib::prelude::Vector2;
+
 // bresenham's line algorithm
-pub fn line(start: Vector2, end: Vector2, width: u32, height: u32) -> Vec<(u32, u32)> {
+pub fn line(start: &Vertex, end: &Vertex) -> Vec<Fragment> {
+    let (Some(start_position), Some(end_position)) = (start.screen_position, end.screen_position)
+    else {
+        return Vec::new();
+    };
+
     let mut fragments = Vec::new();
-    let mut x0 = start.x.round() as i32;
-    let mut y0 = start.y.round() as i32;
-    let x1 = end.x.round() as i32;
-    let y1 = end.y.round() as i32;
+    let mut x0 = start_position.x.round() as i32;
+    let mut y0 = start_position.y.round() as i32;
+    let x1 = end_position.x.round() as i32;
+    let y1 = end_position.y.round() as i32;
 
     let dx = (x1 - x0).abs();
     let sx = if x0 < x1 { 1 } else { -1 };
@@ -15,9 +23,11 @@ pub fn line(start: Vector2, end: Vector2, width: u32, height: u32) -> Vec<(u32, 
     let mut err = dx - dy;
 
     loop {
-        if x0 >= 0 && x0 < width as i32 && y0 >= 0 && y0 < height as i32 {
-            fragments.push((x0 as u32, y0 as u32));
-        }
+        fragments.push(Fragment {
+            position: Vector2::new(x0 as f32, y0 as f32),
+            color: start.color,
+            depth: start.transformed_position.z,
+        });
 
         if x0 == x1 && y0 == y1 {
             break;
