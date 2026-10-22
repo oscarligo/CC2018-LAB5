@@ -28,18 +28,16 @@ Las mediciones se realizaron en modo optimizado, ejecutando cada algoritmo 100 v
 
 | Algoritmo | Mediana para 100 ejecuciones | Fragmentos |
 |---|---:|---:|
-| Coordenadas baricéntricas | 192.272333 ms | 161100 |
-| Scanlines | 164.175834 ms | 161100 |
+| Coordenadas baricéntricas | 197.943584 ms | 161100 |
+| Scanlines | 167.425 ms | 161100 |
 
-El modo scanline fue aproximadamente 14.6% más rápido en esta medición. Ambos algoritmos produjeron la misma cantidad y las mismas posiciones de fragmentos en las pruebas, por lo que la diferencia no se debe a que uno omita parte del triángulo.
+El modo scanline fue aproximadamente 15.4% más rápido en esta medición. Ambos algoritmos produjeron la misma cantidad y las mismas posiciones de fragmentos en las pruebas, por lo que la diferencia no se debe a que uno omita parte del triángulo.
 
 El algoritmo baricéntrico recorre todo el rectángulo delimitador y evalúa tres pesos para cada posición. Scanline calcula dos intersecciones por fila y solo recorre el tramo interior. Esto reduce el trabajo realizado fuera del triángulo, aunque ambos siguen creando y almacenando el mismo resultado final.
 
 ## Perfil de rendimiento
 
-![Flamegraph de la rasterización](assets/flamegraph.svg)
-
-El perfil se genera sin abrir la ventana y mide únicamente la creación de fragmentos:
+![Perfil de rasterización en Instruments](assets/profile-instruments.png)
 
 ```bash
 cargo flamegraph --release -- --benchmark-triangles
