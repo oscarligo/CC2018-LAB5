@@ -55,9 +55,12 @@ fn main() {
         model_matrix: Matrix::identity(),
         camera_pos,
     };
+    let mut rotation_x = 0.0;
+    let mut rotation_y = 0.0;
 
     while !window.window_should_close() {
         framebuffer.clear();
+        let rotation_step = 1.5 * window.get_frame_time();
 
         // Handle camera movement based on user input
         if window.is_key_down(raylib::consts::KeyboardKey::KEY_W) {
@@ -76,6 +79,20 @@ fn main() {
             // Move camera right
             uniforms.camera_pos += Vector3::new(0.1, 0.0, 0.0);
         }
+        if window.is_key_down(raylib::consts::KeyboardKey::KEY_LEFT) {
+            rotation_y -= rotation_step;
+        }
+        if window.is_key_down(raylib::consts::KeyboardKey::KEY_RIGHT) {
+            rotation_y += rotation_step;
+        }
+        if window.is_key_down(raylib::consts::KeyboardKey::KEY_UP) {
+            rotation_x -= rotation_step;
+        }
+        if window.is_key_down(raylib::consts::KeyboardKey::KEY_DOWN) {
+            rotation_x += rotation_step;
+        }
+        uniforms.model_matrix = Matrix::rotate_xyz(Vector3::new(rotation_x, rotation_y, 0.0));
+
         // Render the 3D object to the framebuffer
         render(&mut framebuffer, &uniforms, &vertex_array, triangle_mode);
 
