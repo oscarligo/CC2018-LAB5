@@ -1,6 +1,7 @@
 use crate::framebuffer::Framebuffer;
 use crate::line::line;
 use crate::load_objects::project_vertex;
+use crate::primitive::primitive_assembly;
 use crate::shaders::vertex_shader;
 use crate::uniforms::Uniforms;
 use crate::vertex::Vertex;
@@ -16,7 +17,10 @@ pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: 
         .collect();
 
     // 2. Primitive Assembly
-    for triangle in transformed_vertices.chunks_exact(3) {
+    let triangles = primitive_assembly(&transformed_vertices);
+
+    // 3. Rasterization
+    for triangle in &triangles {
         let (a, b, c) = (&triangle[0], &triangle[1], &triangle[2]);
         let projected = [a, b, c].map(|vertex| {
             project_vertex(
@@ -31,7 +35,6 @@ pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: 
             continue;
         };
 
-        // 3. Rasterization
         let fragments = line(a, b, framebuffer.width, framebuffer.height)
             .into_iter()
             .chain(line(b, c, framebuffer.width, framebuffer.height))

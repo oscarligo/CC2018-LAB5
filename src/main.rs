@@ -1,6 +1,7 @@
 mod framebuffer;
 mod line;
 mod load_objects;
+mod primitive;
 mod render;
 mod shaders;
 mod triangle;
