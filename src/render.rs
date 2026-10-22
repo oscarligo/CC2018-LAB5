@@ -2,7 +2,7 @@ use crate::framebuffer::Framebuffer;
 use crate::load_objects::project_vertex;
 use crate::primitive::primitive_assembly;
 use crate::rasterizer::rasterize;
-use crate::shaders::vertex_shader;
+use crate::shaders::{fragment_shader, vertex_shader};
 use crate::uniforms::Uniforms;
 use crate::vertex::Vertex;
 
@@ -34,10 +34,12 @@ pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: 
 
     // 4. Fragment Processing
     for fragment in fragments {
+        let color = fragment_shader(&fragment);
+
         framebuffer.point(
             fragment.position.x as i32,
             fragment.position.y as i32,
-            fragment.color,
+            color,
         );
     }
 }

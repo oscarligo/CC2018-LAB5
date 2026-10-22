@@ -22,8 +22,14 @@ impl Framebuffer {
         self.color_buffer = Image::gen_image_color(self.width as i32, self.height as i32, self.background_color);
     } 
 
-    pub fn point(&mut self, x: i32, y: i32, color: Color) {
+    pub fn point(&mut self, x: i32, y: i32, color: Vector3) {
         if x >= 0 && x < self.width as i32 && y >= 0 && y < self.height as i32 {
+            let color = Color::new(
+                (color.x.clamp(0.0, 1.0) * 255.0) as u8,
+                (color.y.clamp(0.0, 1.0) * 255.0) as u8,
+                (color.z.clamp(0.0, 1.0) * 255.0) as u8,
+                255,
+            );
             self.color_buffer.draw_pixel(x, y, color);
         }
     }

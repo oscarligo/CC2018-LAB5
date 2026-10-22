@@ -1,3 +1,4 @@
+use crate::fragment::Fragment;
 use crate::uniforms::Uniforms;
 use crate::vertex::Vertex;
 use raylib::prelude::*;
@@ -18,4 +19,8 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     let mut result = vertex.clone();
     result.transformed_position = Vector3::new(transformed.x, transformed.y, transformed.z);
     result
+}
+
+pub fn fragment_shader(fragment: &Fragment) -> Vector3 {
+    fragment.color
 }
