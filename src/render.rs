@@ -1,12 +1,17 @@
 use crate::framebuffer::Framebuffer;
 use crate::load_objects::project_vertex;
 use crate::primitive::primitive_assembly;
-use crate::rasterizer::rasterize;
+use crate::rasterizer::{rasterize, TriangleMode};
 use crate::shaders::{fragment_shader, vertex_shader};
 use crate::uniforms::Uniforms;
 use crate::vertex::Vertex;
 
-pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Vertex]) {
+pub fn render(
+    framebuffer: &mut Framebuffer,
+    uniforms: &Uniforms,
+    vertex_array: &[Vertex],
+    mode: TriangleMode,
+) {
     let width = framebuffer.width as f32;
     let height = framebuffer.height as f32;
 
@@ -30,7 +35,7 @@ pub fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: 
     let triangles = primitive_assembly(&transformed_vertices);
 
     // 3. Rasterization
-    let fragments = rasterize(&triangles);
+    let fragments = rasterize(&triangles, mode);
 
     // 4. Fragment Processing
     for fragment in fragments {
